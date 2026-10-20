@@ -1,0 +1,28 @@
+name: Update launches feed
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # hourly
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python build_launches.py
+      - name: Commit if changed
+        run: |
+          if ! git diff --quiet -- docs/launches.json; then
+            git config user.name "watch-feed bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add docs/launches.json
+            git commit -m "Update launches feed"
+            git push
+          fi
